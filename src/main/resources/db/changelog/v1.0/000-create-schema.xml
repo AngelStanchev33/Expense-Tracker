@@ -1,0 +1,13 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+       http://www.liquibase.org/xml/ns/dbchangelog
+       https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="1.0-000" author="Angel">
+        <sql>
+            CREATE DATABASE IF NOT EXISTS expense_tracker;
+            USE expense_tracker;
+        </sql>
+    </changeSet>
+</databaseChangeLog> 
