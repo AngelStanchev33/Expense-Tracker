@@ -31,6 +31,11 @@ public class JwstServiceImpl implements JwtService {
 
     @Override
     public String generateToken(String userEmail, Map<String, Object> claims) {
+
+        if (userEmail == null || userEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
         var now = new Date();
         return Jwts
                 .builder()
@@ -45,8 +50,9 @@ public class JwstServiceImpl implements JwtService {
     }
 
     @Override
-    public String generateToken(String username) {
-        return generateToken(username, Map.of());
+    public String generateToken(String userEmail) {
+
+        return generateToken(userEmail, Map.of());
     }
 
     @Override

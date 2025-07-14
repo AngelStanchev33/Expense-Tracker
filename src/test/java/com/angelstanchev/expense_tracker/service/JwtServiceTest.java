@@ -2,7 +2,10 @@ package com.angelstanchev.expense_tracker.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 
@@ -53,4 +56,91 @@ public class JwtServiceTest {
 
     }
 
+    @Test
+    void generateToken_WithClaims_ShouldThrowIfEmailIsNull() {
+        String userEmail = null;
+        Map<String, Object> claims = Map.of("role", "USER");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            jwtService.generateToken(userEmail, claims);
+        });
+    }
+
+    @Test
+    void generateToken_WithClaims_ShouldThrowIfEmailIsEmpty() {
+        String userEmail = "";
+        Map<String, Object> claims = Map.of("role", "USER");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            jwtService.generateToken(userEmail, claims);
+        });
+    }
+
+    @Test
+    void generateToken_WithClaims_ShouldThrowIfEmailIsOnlyWhitespace() {
+        String userEmail = "   ";
+        Map<String, Object> claims = Map.of("role", "USER");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            jwtService.generateToken(userEmail, claims);
+        });
+    }
+
+    @Test
+    void generateToken_WithOutClaiim_ShouldCreateValidToken() {
+        String userEmail = "test@example.com";
+        String token = jwtService.generateToken(userEmail);
+
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
+
+        String extractUserName = jwtService.extractUsername(token);
+        assertEquals(userEmail, extractUserName);
+
+    }
+
+    @Test
+    void isTokenValid_WithValidToken_ShouldReturnTrue() {
+        String token = jwtService.generateToken("test@angel.com");
+
+        boolean tokenValid = jwtService.isTokenValid(token);
+
+        assertTrue(tokenValid);
+    }
+
+    @Test
+    void isTokenValid_WithInvalidToken_ShouldReturnFalse() {
+        String token = "ivalid.token";
+
+        boolean tokenValid = jwtService.isTokenValid(token);
+
+        assertFalse(tokenValid);
+    }
+
+    @Test
+    void isTokenValid_WithNullToken_ShouldReturnFalse() {
+
+        boolean tokenValid = jwtService.isTokenValid(null);
+
+        assertFalse(tokenValid);
+
+    }
+
+    @Test
+    void isTokenValid_WithEmptyToken_ShouldReturnFalse() {
+        String token = "";
+
+        boolean tokenValid = jwtService.isTokenValid(token);
+
+        assertFalse(tokenValid);
+    }
+
+    @Test
+    void generateToken_ShouldCreateDifferentTokensEachTime() {
+        String token = jwtService.generateToken("test@angel.com");
+        String token2 = jwtService.generateToken("test2@angel.com");
+
+        assertNotEquals(token, token2);
+
+    }
 }
