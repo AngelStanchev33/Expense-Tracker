@@ -38,6 +38,7 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
+        UserDetails user = (UserDetails) authentication.getPrincipal();
 
         List<String> userRoles = user.getAuthorities().stream()
                 .map(Object::toString)
