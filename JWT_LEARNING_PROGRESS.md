@@ -9,7 +9,7 @@
 **Компоненти създадени:**
 - `AuthRequestDto` и `AuthResponseDto` - за login заявки
 - `JwtService` - методи за генериране и валидация на токени
-- `AuthController` - endpoint `/auth/login` за автентикация
+- `AuthController` - endpoint `/auth/login` за автентикация (имплементиран)
 - `JwtAuthFilter` - филтър за проверка на JWT токени при всяка заявка
 - `SecurityConfig` - конфигуриране на JWT автентикация, disable на form login
 
@@ -72,7 +72,15 @@
 
 **Написани тестове:**
 1. ✅ `generateToken_WithClams_ShoulCreateValidToken()` - тества генериране с claims
-2. ✅ `extractUsername_ShouldReturnCorrectUsername()` - тества извличане на username
+2. ✅ `generateToken_WithOutClaiim_ShouldCreateValidToken()` - тества генериране без claims
+3. ✅ `extractUsername_ShouldReturnCorrectUsername()` - тества извличане на username
+4. ✅ `isTokenValid_WithValidToken_ShouldReturnTrue()` - тества валидни токени
+5. ✅ `isTokenValid_WithInvalidToken_ShouldReturnFalse()` - тества невалидни токени
+6. ✅ `isTokenValid_WithNullToken_ShouldReturnFalse()` - тества null токени
+7. ✅ `isTokenValid_WithEmptyToken_ShouldReturnFalse()` - тества празни токени
+8. ✅ `generateToken_WithClaims_ShouldThrowIfEmailIsNull()` - тества null email
+9. ✅ `generateToken_WithClaims_ShouldThrowIfEmailIsEmpty()` - тества празен email
+10. ✅ `generateToken_WithClaims_ShouldThrowIfEmailIsOnlyWhitespace()` - тества whitespace email
 
 **Резултати:**
 - Всички тестове минават успешно
@@ -91,15 +99,17 @@
 
 ## 🚀 Следващи Стъпки
 
-### 1. Допълнителни Unit Тестове за JwtService
-- [ ] Тест за невалидни токени
+### 1. Допълнителни Unit Тестове за JwtService ✅
+- [x] Тест за невалидни токени
+- [x] Тест за edge cases (null, empty, whitespace)
 - [ ] Тест за изтекли токени  
-- [ ] Тест за edge cases
+- [ ] Тест за различни токени всеки път
 
 ### 2. Integration Тестове за AuthController
 - [ ] Тест на `/auth/login` endpoint
 - [ ] Тест с валидни/невалидни credentials
 - [ ] Тест на response формат
+- [ ] Тест на error handling
 
 ### 3. Integration Тестове за JwtAuthFilter
 - [ ] Тест на филтриране на заявки
@@ -149,6 +159,11 @@
 8. **SecurityContextHolder проверка** предотвратява дублиране на сесии
 9. **Множество AuthenticationProvider-и** са възможни за различни типове auth
 10. **UsernamePasswordAuthenticationToken има два конструктора** - за различни случаи
+11. **AuthController използва AuthenticationManager** - за валидация на credentials
+12. **Избягваме дублиране** - използваме authentication.getPrincipal() вместо userDetailsService
+13. **Claims в JWT токени** - за роли и допълнителна информация
+14. **Frontend управлява JWT токени** - localStorage, headers, validation
+15. **Stateless автентикация** - Spring не "помни" между заявките
 
 ## 🔧 Технически Детайли
 
@@ -168,10 +183,56 @@
 2. AuthController: AuthenticationManager.authenticate()
 3. AuthenticationManager: DaoAuthenticationProvider.authenticate()
 4. DaoAuthenticationProvider: UserDetailsService + PasswordEncoder
-5. Ако успешно: генерира JWT токен
-6. Клиент: Authorization: Bearer <token>
-7. JwtAuthFilter: валидира токена
-8. Ако валиден: SecurityContextHolder.setAuthentication()
+5. Ако успешно: извлича UserDetails от authentication.getPrincipal()
+6. Генерира JWT токен с claims (роли)
+7. Връща AuthResponseDto с токена
+8. Клиент: Authorization: Bearer <token>
+9. JwtAuthFilter: валидира токена
+10. Ако валиден: SecurityContextHolder.setAuthentication()
+11. При следваща заявка: отново проверява токена (stateless)
+```
+
+### AuthController Имплементация
+```java
+@PostMapping("/login")
+public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto request) {
+    // 1. Валидираме credentials
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(request.username(), request.password())
+    );
+    
+    // 2. Извличаме UserDetails (избягваме дублиране)
+    UserDetails user = (UserDetails) authentication.getPrincipal();
+    
+    // 3. Генерираме JWT токен с claims
+    List<String> userRoles = user.getAuthorities().stream()
+        .map(Object::toString)
+        .toList();
+    Map<String, Object> claims = Map.of("roles", userRoles);
+    String token = jwtService.generateToken(user.getUsername(), claims);
+    
+    // 4. Връщаме response
+    return ResponseEntity.ok(new AuthResponseDto(token));
+}
+```
+
+### Frontend JWT Management
+```javascript
+// След login
+localStorage.setItem('jwt', response.token);
+
+// При всяка заявка
+fetch('/api/data', {
+  headers: {
+    'Authorization': 'Bearer ' + localStorage.getItem('jwt')
+  }
+});
+
+// Проверка дали е логнат
+function isLoggedIn() {
+    const token = localStorage.getItem('jwt');
+    return token !== null && token !== '';
+}
 ```
 
 ---

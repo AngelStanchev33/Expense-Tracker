@@ -3,7 +3,7 @@
        http://www.liquibase.org/xml/ns/dbchangelog
        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="db/changelog/v1.0/000-create-schema.xml"/>
+    <!-- <include file="db/changelog/v1.0/000-create-schema.xml"/> -->
     <include file="db/changelog/v1.0/001-base-entities.xml"/>
     <include file="db/changelog/v1.0/002-create-users-table.xml"/>
     <include file="db/changelog/v1.0/003-create-user_role-table.xml"/>

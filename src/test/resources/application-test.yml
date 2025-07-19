@@ -1,9 +1,12 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: 
     driver-class-name: org.h2.Driver
+    
+  liquibase:
+    enabled: true
   
   h2:
     console:
@@ -11,8 +14,9 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect  # Добави това
     properties:
       hibernate:
         format_sql: true
@@ -20,8 +24,12 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+    org.springframework.security.authentication: TRACE
+    org.springframework.security.authentication.dao: TRACE
     org.hibernate.SQL: DEBUG
+    org.hibernate.type: DEBUG
+    com.angelstanchev.expense_tracker: DEBUG
 
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-  expiration: 86400000 
+  expiration: 86400000

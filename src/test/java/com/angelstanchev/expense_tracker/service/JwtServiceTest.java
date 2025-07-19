@@ -76,6 +76,7 @@ public class JwtServiceTest {
         });
     }
 
+
     @Test
     void generateToken_WithClaims_ShouldThrowIfEmailIsOnlyWhitespace() {
         String userEmail = "   ";
@@ -146,13 +147,20 @@ public class JwtServiceTest {
 
     @Test
     void isTokenValid_WithExpiredToken_ShouldReturnFalse() {
+        String expiredToken = createExpiredToken();
+
+        boolean tokenValid = jwtService.isTokenValid(expiredToken);
+
+        assertFalse(tokenValid);
+
+    }
+
+
+    private String createExpiredToken() {
         String testSecret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
         JwtService shortExpJwtService = new JwstServiceImpl(testSecret, 0);
         String token = shortExpJwtService.generateToken("angel@test.com");
 
-        boolean tokenValid = shortExpJwtService.isTokenValid(token);
-
-        assertFalse(tokenValid);
-
+        return token;
     }
 }

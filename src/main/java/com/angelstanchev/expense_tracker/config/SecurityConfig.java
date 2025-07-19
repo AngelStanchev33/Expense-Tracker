@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("auth/login", "auth/register", "/").permitAll()
+                        .requestMatchers("/auth/login", "/auth/register", "/").permitAll()
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -48,14 +48,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
