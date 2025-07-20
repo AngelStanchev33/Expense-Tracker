@@ -82,19 +82,51 @@ public class AuthControllerIntegrationTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"Angel@gmail.com\",\"password\":\"NiceSpice123\"}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.token").doesNotExist());
 
     }
 
     @Test
     void shouldLogin_UnSuccessful_WrongPassword() throws Exception {
         mockMvc.perform(post("/auth/login")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"AngelStanchev33@gmail.com\",\"password\":\"123\"}"))
                 .andDo(print())
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.token").doesNotExist());
     }
 
+    @Test
+    void shouldLogin_Fail_EmptyUsername() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"\",\"password\":\"NiceSpice123\"}"))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void shouldLogin_Fail_NullUsername() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"NiceSpice123\"}"))
+                .andExpect(status().isBadRequest()); // или 400
+    }
+
+    @Test
+    void shouldLogin_Fail_EmptyPassword() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"AngelStanchev33@gmail.com\",\"password\":\"\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldLogin_Fail_NullPassword() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"AngelStanchev33@gmail.com\"}"))
+                .andExpect(status().isBadRequest());
+    }
 }

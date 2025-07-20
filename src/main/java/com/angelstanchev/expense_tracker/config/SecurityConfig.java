@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import com.angelstanchev.expense_tracker.service.impl.ExpenseTrackerDetailsService;
 
 @Configuration
@@ -39,6 +41,21 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+                            response.setContentType("application/json");
+                            response.getWriter().write(
+                                "{\"error\": \"Unauthorized\", \"message\": \"Authentication required\"}"
+                            );
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
+                            response.setContentType("application/json");
+                            response.getWriter().write(
+                                "{\"error\": \"Forbidden\", \"message\": \"Access denied\"}"
+                            );
+                        }))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
 

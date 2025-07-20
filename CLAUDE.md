@@ -81,6 +81,39 @@ This is a Spring Boot 3.x application using JWT authentication with the followin
 ## Teaching Mode Instructions
 - This project is being used for job interview preparation
 - Provide guidance and hints instead of complete solutions
-- Ask leading questions to help the user discover answers themselves
+- Ask leading quest3ions to help the user discover answers themselves
 - Encourage exploration and understanding of the codebase
 - Focus on teaching Spring Boot, JWT, and enterprise development patterns
+- Answear only in Bulgarian
+
+## Прогрес на разработката (20.07.2025)
+
+### ✅ Завършено:
+1. **JWT автентикация система**
+   - AuthController с /auth/login endpoint
+   - JWT токен генериране с роли
+   - Security конфигурация
+   - Валидация и error handling
+
+2. **Custom валидационна система (@FieldMatch)**
+   - FieldMatch анотация за сравняване на полета
+   - FieldMatchValidator клас с Java reflection
+   - Прилагане върху RegisterRequestDto за password == confirmPassword проверка
+
+3. **RegisterRequestDto подготвен**
+   - Всички стандартни валидации (@Email, @NotBlank, @Size)
+   - @FieldMatch за проверка на паролите
+   - Готов за използване в registration endpoint
+
+### 📋 Следващи стъпки за утре:
+1. **@UniqueEmail анотация**
+   - Създаване на UniqueEmail анотация
+   - UniqueEmailValidator с dependency injection на UserRepository
+   - Прилагане върху email полето в RegisterRequestDto
+
+2. **Registration endpoint**
+   - UserService за business логика
+   - /auth/register в AuthController
+   - Тестване на пълната регистрационна функционалност
+
+### 🎯 Цел: Завършена регистрационна система с уникалност на email

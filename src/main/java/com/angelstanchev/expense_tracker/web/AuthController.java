@@ -1,5 +1,6 @@
 package com.angelstanchev.expense_tracker.web;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,8 +13,10 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,20 +37,29 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDto request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
-        UserDetails user = (UserDetails) authentication.getPrincipal();
+            UserDetails user = (UserDetails) authentication.getPrincipal();
 
-        List<String> userRoles = user.getAuthorities().stream()
-                .map(Object::toString)
-                .toList();
+            List<String> userRoles = user.getAuthorities().stream()
+                    .map(Object::toString)
+                    .toList();
 
-        Map<String, Object> claims = Map.of("roles", userRoles);
+            Map<String, Object> claims = Map.of("roles", userRoles);
 
-        String token = jwtService.generateToken(user.getUsername(), claims);
+            String token = jwtService.generateToken(user.getUsername(), claims);
 
-        return ResponseEntity.ok(new AuthResponseDto(token));
+            return ResponseEntity.ok(new AuthResponseDto(token));
+            
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "error", "Bad credentials", 
+                            "message", "Invalid username or password"
+                    ));
+        }
     }
 }
